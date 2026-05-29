@@ -36,7 +36,7 @@
   }
   .app {
     display: grid;
-    grid-template-columns: minmax(380px, 440px) 1fr;
+    grid-template-columns: minmax(440px, 500px) 1fr;
     height: 100vh;
   }
 
@@ -54,7 +54,7 @@
   .panel::-webkit-scrollbar-thumb { background: var(--field-border); border-radius: 4px; }
 
   .brand {
-    padding: 28px 32px 22px;
+    padding: 26px 32px 20px;
     border-bottom: 1px solid var(--field-border);
     position: sticky; top: 0;
     background: var(--panel);
@@ -97,7 +97,7 @@
   }
 
   .form {
-    padding: 26px 32px 32px;
+    padding: 24px 32px 32px;
     flex: 1;
   }
   .group {
@@ -126,8 +126,10 @@
   }
   .row { display: grid; gap: 10px; margin-bottom: 10px; }
   .row-2 { grid-template-columns: 1fr 1fr; }
-  .row-3 { grid-template-columns: 2fr 1fr 1fr; }
-  .field { display: flex; flex-direction: column; }
+  .row-2-tight { grid-template-columns: 1fr 2fr; }
+  .row-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .row-3-cidade { grid-template-columns: 3fr 1fr; }
+  .field { display: flex; flex-direction: column; min-width: 0; }
   .field label {
     font-size: 10.5px;
     text-transform: uppercase;
@@ -135,6 +137,7 @@
     color: var(--panel-mute);
     margin-bottom: 5px;
     font-weight: 500;
+    display: flex; align-items: center; gap: 6px;
   }
   .field input, .field textarea, .field select {
     background: var(--field-bg);
@@ -145,6 +148,8 @@
     font-family: 'Manrope', sans-serif;
     font-size: 13.5px;
     transition: border-color 0.15s, background 0.15s;
+    min-width: 0;
+    width: 100%;
   }
   .field input:focus, .field textarea:focus, .field select:focus {
     outline: none;
@@ -168,6 +173,21 @@
     cursor: pointer;
   }
 
+  /* CEP loading indicator */
+  .cep-status {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 11px;
+    color: var(--panel-mute);
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+    transition: color 0.2s;
+  }
+  .cep-status.loading { color: var(--gold); }
+  .cep-status.success { color: #7fa86b; }
+  .cep-status.error { color: var(--accent-soft); }
+
   /* Collapsible row */
   .row.collapsible {
     max-height: 0;
@@ -182,13 +202,14 @@
     margin-bottom: 10px;
   }
 
-  /* Action bar */
+  /* Action bar — solid background so nothing looks "cut off" */
   .actions {
     position: sticky; bottom: 0;
-    background: linear-gradient(to top, var(--panel) 70%, rgba(28,26,23,0));
-    padding: 22px 32px 26px;
+    background: var(--panel);
+    padding: 16px 32px 22px;
     display: flex; flex-direction: column; gap: 10px;
     border-top: 1px solid var(--field-border);
+    box-shadow: 0 -10px 20px -10px rgba(0,0,0,0.5);
   }
   .btn {
     border: none;
@@ -347,6 +368,9 @@
     text-transform: uppercase;
   }
 
+  /* Print footer with CNPJ — shown only on print */
+  .print-footer { display: none; }
+
   /* Toast */
   .toast {
     position: fixed;
@@ -370,7 +394,10 @@
 
   /* Print */
   @media print {
-    @page { size: A4; margin: 18mm; }
+    @page {
+      size: A4;
+      margin: 18mm 18mm 22mm 18mm;
+    }
     body { background: white; overflow: visible; }
     .app { display: block; height: auto; }
     .panel, .stage-bar, .actions { display: none !important; }
@@ -395,6 +422,22 @@
     .doc .placeholder.empty { background: transparent; color: inherit; font-style: normal; }
     .sig-email { margin-bottom: 18px; }
     .doc .signatures { gap: 30px; }
+
+    /* Custom print footer with CNPJ on every page */
+    .print-footer {
+      display: block;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-family: 'EB Garamond', Georgia, serif;
+      font-size: 9pt;
+      color: #4a463f;
+      padding-top: 6px;
+      border-top: 1px solid rgba(176,138,62,0.4);
+    }
+    .print-footer strong { font-weight: 600; }
   }
 
   /* Smaller screens */
@@ -454,21 +497,36 @@
           <span>Endereço</span>
           <span class="group-num">ii.</span>
         </div>
-        <div class="row row-3">
+        <div class="row row-2-tight">
+          <div class="field">
+            <label>
+              CEP
+              <span class="cep-status" id="cepStatus">auto‑preenche</span>
+            </label>
+            <input name="cep" placeholder="00000-000" inputmode="numeric" />
+          </div>
           <div class="field">
             <label>Logradouro</label>
             <input name="logradouro" placeholder="Rua, avenida..." />
           </div>
+        </div>
+        <div class="row row-2-tight">
           <div class="field">
             <label>Número</label>
             <input name="numero" placeholder="123" />
           </div>
           <div class="field">
+            <label>Complemento</label>
+            <input name="complemento" placeholder="Apto, sala, bloco (opcional)" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
             <label>Bairro</label>
             <input name="bairro" placeholder="Bairro" />
           </div>
         </div>
-        <div class="row row-3">
+        <div class="row row-3-cidade">
           <div class="field">
             <label>Cidade</label>
             <input name="cidade" placeholder="Cidade" />
@@ -476,10 +534,6 @@
           <div class="field">
             <label>UF</label>
             <input name="uf" placeholder="SC" maxlength="2" />
-          </div>
-          <div class="field">
-            <label>CEP</label>
-            <input name="cep" placeholder="00000-000" />
           </div>
         </div>
       </div>
@@ -644,6 +698,11 @@
   </main>
 </div>
 
+<!-- Print-only footer: appears on every printed page with CNPJ -->
+<div class="print-footer">
+  <strong data-bind-footer="razao">JUSTHELP ASSESSORIA BR LTDA</strong> &nbsp;·&nbsp; CNPJ <span data-bind-footer="cnpj">26.986.110/0001-68</span>
+</div>
+
 <div class="toast" id="toast">Pronto!</div>
 
 <script>
@@ -653,6 +712,7 @@
   const toast = document.getElementById('toast');
   const parcelaRow = document.getElementById('parcelaRow');
   const clausula41 = document.getElementById('clausula41');
+  const cepStatus = document.getElementById('cepStatus');
 
   // ---- Helpers ----
   const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
@@ -675,7 +735,6 @@
     return `${d} de ${MESES[m-1]} de ${y}`;
   }
 
-  // Add N days to an ISO date and return new ISO date
   function addDays(iso, days) {
     if (!iso) return '';
     const [y, m, d] = iso.split('-').map(Number);
@@ -703,6 +762,7 @@
     const parts = [];
     if (data.logradouro) parts.push(data.logradouro);
     if (data.numero) parts.push(data.numero);
+    if (data.complemento) parts.push(data.complemento);
     if (data.bairro) parts.push(data.bairro);
     return parts.join(', ');
   }
@@ -713,13 +773,53 @@
     }[c]));
   }
 
-  // Builds the placeholder span markup for clause 4.1
   function ph(value, fallback) {
     if (value) return `<span class="placeholder">${escapeHtml(value)}</span>`;
     return `<span class="placeholder empty">${escapeHtml(fallback)}</span>`;
   }
 
-  // ---- Render the dynamic Clause 4.1 ----
+  // ---- CEP lookup via ViaCEP ----
+  function setCepStatus(text, kind) {
+    cepStatus.textContent = text;
+    cepStatus.className = 'cep-status' + (kind ? ' ' + kind : '');
+  }
+
+  let cepLookupTimer = null;
+  let lastLookedUpCep = '';
+
+  async function lookupCep(rawCep) {
+    const cep = rawCep.replace(/\D/g, '');
+    if (cep.length !== 8) {
+      setCepStatus('auto‑preenche', '');
+      return;
+    }
+    if (cep === lastLookedUpCep) return;
+    lastLookedUpCep = cep;
+
+    setCepStatus('buscando…', 'loading');
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      if (!res.ok) throw new Error('rede');
+      const data = await res.json();
+      if (data.erro) {
+        setCepStatus('CEP não encontrado', 'error');
+        return;
+      }
+      // Fill fields only if they help; preserve user-typed número/complemento
+      if (data.logradouro) form.logradouro.value = data.logradouro;
+      if (data.bairro) form.bairro.value = data.bairro;
+      if (data.localidade) form.cidade.value = data.localidade;
+      if (data.uf) form.uf.value = data.uf;
+      setCepStatus('endereço preenchido ✓', 'success');
+      render();
+      // Move focus to número for fluid filling
+      if (!form.numero.value) form.numero.focus();
+    } catch (e) {
+      setCepStatus('falha — verifique a internet', 'error');
+    }
+  }
+
+  // ---- Render dynamic Clause 4.1 ----
   function renderClausula41(modalidade, data) {
     const valorNum = parseMoney(data.valor);
     const entradaNum = parseMoney(data.entrada);
@@ -730,7 +830,6 @@
       const entradaFmt = formatMoney(entradaNum);
       const parcela2Fmt = formatMoney(parcela2Num);
 
-      // 2nd installment date: contract date + 30 days
       const data2Iso = addDays(data.data, 30);
       const data2Fmt = formatDateShort(data2Iso);
 
@@ -739,7 +838,6 @@
         `entrada no valor de ${ph(entradaFmt, 'R$ [entrada]')} a ser paga no ato da assinatura do presente contrato; e ` +
         `parcela final no valor de ${ph(parcela2Fmt, 'R$ [parcela]')} a ser paga em até 30 (trinta) dias contados da assinatura ${data2Fmt ? `(vencimento em ${ph(data2Fmt, '')})` : ''}, de forma irrevogável e irretratável.`;
 
-      // also update the parcela2 input
       if (form.parcela2) {
         form.parcela2.value = !isNaN(parcela2Num) ? parcela2Num.toFixed(2).replace('.', ',') : '';
       }
@@ -755,7 +853,6 @@
     const data = Object.fromEntries(new FormData(form));
     const modalidade = data.modalidade || 'vista';
 
-    // toggle parcela row
     if (modalidade === 'parcelado') {
       parcelaRow.classList.add('open');
     } else {
@@ -785,10 +882,16 @@
       }
     });
 
+    // Update print footer dynamically (in case razão / CNPJ change)
+    document.querySelectorAll('[data-bind-footer]').forEach(el => {
+      const key = el.getAttribute('data-bind-footer');
+      if (data[key]) el.textContent = data[key];
+    });
+
     renderClausula41(modalidade, data);
   }
 
-  // ---- Auto-format inputs as user types ----
+  // ---- Input masks ----
   function attachMasks() {
     const cpf = form.cpf;
     cpf.addEventListener('input', e => {
@@ -802,8 +905,23 @@
     const cep = form.cep;
     cep.addEventListener('input', e => {
       let v = e.target.value.replace(/\D/g, '').slice(0, 8);
-      v = v.replace(/(\d{5})(\d)/, '$1-$2');
-      e.target.value = v;
+      const formatted = v.replace(/(\d{5})(\d)/, '$1-$2');
+      e.target.value = formatted;
+
+      // Debounce CEP lookup — fires when 8 digits are present
+      clearTimeout(cepLookupTimer);
+      if (v.length === 8) {
+        cepLookupTimer = setTimeout(() => lookupCep(v), 250);
+      } else {
+        setCepStatus('auto‑preenche', '');
+        lastLookedUpCep = '';
+      }
+    });
+
+    // Also trigger on blur (in case of paste etc.)
+    cep.addEventListener('blur', e => {
+      const v = e.target.value.replace(/\D/g, '');
+      if (v.length === 8) lookupCep(v);
     });
 
     const uf = form.uf;
@@ -844,8 +962,10 @@
     const nome = (data.nome || 'contrato').trim().replace(/\s+/g, '_');
     const filename = `Contrato_${nome}.html`;
 
-    // Build standalone HTML with just the document
     const docHtml = doc.outerHTML;
+    const razao = escapeHtml(data.razao || 'JUSTHELP ASSESSORIA BR LTDA');
+    const cnpj = escapeHtml(data.cnpj || '26.986.110/0001-68');
+
     const standalone = `<!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="UTF-8"><title>Contrato — ${escapeHtml(data.nome || '')}</title>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Fraunces:wght@500;600;700&display=swap" rel="stylesheet">
@@ -865,8 +985,20 @@ body{margin:0;background:#ebe3d0;font-family:'EB Garamond',Georgia,serif;padding
 .sig-email{font-style:italic;margin-bottom:28px;color:#4a463f;}
 .sig-line{border-top:1px solid #18130c;width:70%;margin:0 auto 8px;}
 .sig-label{font-family:'Fraunces',serif;font-weight:600;font-size:12px;letter-spacing:.12em;text-transform:uppercase;}
-@media print{@page{size:A4;margin:18mm;}body{background:#fff;padding:0;}.doc{box-shadow:none;max-width:none;padding:0;font-size:11pt;line-height:1.55;}.doc::before{display:none;}.placeholder{background:transparent;}.placeholder.empty{background:transparent;color:inherit;font-style:normal;}}
-</style></head><body>${docHtml}</body></html>`;
+.print-footer{display:none;}
+@media print{
+  @page{size:A4;margin:18mm 18mm 22mm 18mm;}
+  body{background:#fff;padding:0;}
+  .doc{box-shadow:none;max-width:none;padding:0;font-size:11pt;line-height:1.55;}
+  .doc::before{display:none;}
+  .placeholder{background:transparent;}
+  .placeholder.empty{background:transparent;color:inherit;font-style:normal;}
+  .print-footer{display:block;position:fixed;bottom:0;left:0;right:0;text-align:center;font-family:'EB Garamond',Georgia,serif;font-size:9pt;color:#4a463f;padding-top:6px;border-top:1px solid rgba(176,138,62,.4);}
+  .print-footer strong{font-weight:600;}
+}
+</style></head><body>${docHtml}
+<div class="print-footer"><strong>${razao}</strong> &nbsp;·&nbsp; CNPJ ${cnpj}</div>
+</body></html>`;
 
     const blob = new Blob([standalone], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -880,13 +1012,15 @@ body{margin:0;background:#ebe3d0;font-family:'EB Garamond',Georgia,serif;padding
 
   document.getElementById('resetBtn').addEventListener('click', () => {
     if (!confirm('Deseja limpar todos os campos do contratante?')) return;
-    ['nome','cpf','rg','email','logradouro','numero','bairro','cidade','uf','cep','entrada'].forEach(n => {
+    ['nome','cpf','rg','email','logradouro','numero','complemento','bairro','cidade','uf','cep','entrada'].forEach(n => {
       if (form[n]) form[n].value = '';
     });
     form.modalidade.value = 'vista';
     form.valor.value = '599,00';
     form.data.value = new Date().toISOString().slice(0,10);
     form.foro.value = 'Ceilândia, DF';
+    setCepStatus('auto‑preenche', '');
+    lastLookedUpCep = '';
     render();
     showToast('Formulário limpo');
   });
