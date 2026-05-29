@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Gerador de Contrato — JustHelp</title>
+<title>JustHelp</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -96,6 +96,44 @@
     margin-left: 50px;
   }
 
+  /* Contract type selector — segmented control */
+  .contract-switch {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: var(--panel-soft);
+    border: 1px solid var(--field-border);
+    border-radius: 6px;
+    padding: 4px;
+    margin: 18px 32px 0;
+    gap: 4px;
+  }
+  .contract-switch label {
+    cursor: pointer;
+    padding: 10px 8px;
+    text-align: center;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--panel-mute);
+    border-radius: 4px;
+    transition: all 0.18s ease;
+    line-height: 1.3;
+    text-transform: uppercase;
+  }
+  .contract-switch input { display: none; }
+  .contract-switch label:hover { color: var(--panel-text); }
+  .contract-switch input:checked + span {
+    background: var(--accent);
+    color: #fff5e8;
+    box-shadow: 0 2px 8px -2px rgba(125,28,47,0.6);
+  }
+  .contract-switch span {
+    display: block;
+    padding: 10px 8px;
+    border-radius: 4px;
+    transition: all 0.18s ease;
+  }
+
   .form {
     padding: 24px 32px 32px;
     flex: 1;
@@ -103,6 +141,23 @@
   .group {
     margin-bottom: 26px;
   }
+  /* Hide groups specific to a contract type */
+  .group[data-only="1"],
+  .field[data-only="1"],
+  .row[data-only="1"] { display: none; }
+  body.contract-1 .group[data-only="1"],
+  body.contract-1 .field[data-only="1"],
+  body.contract-1 .row[data-only="1"] { display: block; }
+  body.contract-1 .row[data-only="1"] { display: grid; }
+
+  .group[data-only="2"],
+  .field[data-only="2"],
+  .row[data-only="2"] { display: none; }
+  body.contract-2 .group[data-only="2"],
+  body.contract-2 .field[data-only="2"],
+  body.contract-2 .row[data-only="2"] { display: block; }
+  body.contract-2 .row[data-only="2"] { display: grid; }
+
   .group-title {
     font-family: 'Fraunces', serif;
     font-size: 11px;
@@ -206,11 +261,24 @@
   .actions {
     position: sticky; bottom: 0;
     background: var(--panel);
-    padding: 16px 32px 22px;
-    display: flex; flex-direction: column; gap: 10px;
+    padding: 14px 32px 18px;
+    display: flex; flex-direction: column; gap: 8px;
     border-top: 1px solid var(--field-border);
     box-shadow: 0 -10px 20px -10px rgba(0,0,0,0.5);
   }
+  .print-tip {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: var(--panel-mute);
+    background: rgba(176,138,62,0.07);
+    border-left: 2px solid var(--gold);
+    padding: 8px 12px;
+    margin-bottom: 4px;
+    border-radius: 0 4px 4px 0;
+  }
+  .print-tip strong { color: var(--gold); font-style: normal; font-weight: 600; font-family: 'Manrope', sans-serif; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.1em; }
   .btn {
     border: none;
     padding: 13px 18px;
@@ -273,7 +341,7 @@
     50% { box-shadow: 0 0 0 7px rgba(125,28,47,0.05); }
   }
 
-  /* The document */
+  /* The document(s) */
   .doc {
     background: #fdfaf3;
     max-width: 780px;
@@ -302,6 +370,15 @@
     margin-bottom: 8px;
     letter-spacing: -0.01em;
     color: #18130c;
+  }
+  .doc-subtitle {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 14px;
+    text-align: center;
+    color: var(--gold);
+    margin-bottom: 4px;
   }
   .doc-ornament {
     text-align: center;
@@ -367,6 +444,18 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
+  .sig-meta {
+    font-family: 'EB Garamond', serif;
+    font-size: 13px;
+    color: #4a463f;
+    margin-top: 4px;
+    font-style: italic;
+  }
+
+  /* Show only the active contract doc */
+  .doc[data-contract] { display: none; }
+  body.contract-1 #doc1 { display: block; }
+  body.contract-2 #doc2 { display: block; }
 
   /* Print footer with CNPJ — shown only on print */
   .print-footer { display: none; }
@@ -417,6 +506,7 @@
     }
     .doc::before { display: none; }
     .doc-title { font-size: 20pt; }
+    .doc-subtitle { font-size: 12pt; }
     .doc .clause-title { font-size: 11pt; margin: 16px 0 8px; }
     .doc .placeholder { background: transparent; }
     .doc .placeholder.empty { background: transparent; color: inherit; font-style: normal; }
@@ -447,7 +537,7 @@
   }
 </style>
 </head>
-<body>
+<body class="contract-1">
 
 <div class="app">
 
@@ -461,8 +551,21 @@
       <div class="brand-sub">Gerador de Contratos</div>
     </div>
 
+    <!-- Contract type selector -->
+    <div class="contract-switch" role="tablist" aria-label="Tipo de contrato">
+      <label>
+        <input type="radio" name="contractType" value="1" checked>
+        <span>Limpeza de Nome</span>
+      </label>
+      <label>
+        <input type="radio" name="contractType" value="2">
+        <span>Rating Comercial</span>
+      </label>
+    </div>
+
     <form class="form" id="form" autocomplete="off">
 
+      <!-- ===== CONTRATANTE (both) ===== -->
       <div class="group">
         <div class="group-title">
           <span>Contratante</span>
@@ -470,11 +573,13 @@
         </div>
         <div class="row">
           <div class="field">
-            <label>Nome completo</label>
+            <label>Nome completo / Razão Social</label>
             <input name="nome" placeholder="Nome do contratante" />
           </div>
         </div>
-        <div class="row row-2">
+
+        <!-- Contract 1: CPF + RG -->
+        <div class="row row-2" data-only="1">
           <div class="field">
             <label>CPF</label>
             <input name="cpf" placeholder="000.000.000-00" />
@@ -484,6 +589,19 @@
             <input name="rg" placeholder="00.000.000" />
           </div>
         </div>
+
+        <!-- Contract 2: CPF/CNPJ + Profissão -->
+        <div class="row row-2" data-only="2">
+          <div class="field">
+            <label>CPF ou CNPJ</label>
+            <input name="cpfCnpj" placeholder="000.000.000-00 ou 00.000.000/0000-00" />
+          </div>
+          <div class="field">
+            <label>Profissão / Atividade</label>
+            <input name="profissao" placeholder="empresário(a)" value="empresário(a)" />
+          </div>
+        </div>
+
         <div class="row">
           <div class="field">
             <label>E-mail</label>
@@ -492,6 +610,7 @@
         </div>
       </div>
 
+      <!-- ===== ENDEREÇO (both) ===== -->
       <div class="group">
         <div class="group-title">
           <span>Endereço</span>
@@ -538,7 +657,8 @@
         </div>
       </div>
 
-      <div class="group">
+      <!-- ===== PAGAMENTO — Contract 1 ===== -->
+      <div class="group" data-only="1">
         <div class="group-title">
           <span>Contrato &amp; Pagamento</span>
           <span class="group-num">iii.</span>
@@ -578,6 +698,47 @@
         </div>
       </div>
 
+      <!-- ===== PAGAMENTO — Contract 2 ===== -->
+      <div class="group" data-only="2">
+        <div class="group-title">
+          <span>Serviço &amp; Pagamento</span>
+          <span class="group-num">iii.</span>
+        </div>
+        <div class="row row-2">
+          <div class="field">
+            <label>Rating mínimo garantido</label>
+            <input name="ratingMin" value="AA" />
+          </div>
+          <div class="field">
+            <label>Valor (R$)</label>
+            <input name="valorRating" placeholder="2.500,00" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Valor por extenso</label>
+            <input name="valorExtenso" placeholder="dois mil e quinhentos reais" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Chave PIX (recebimento)</label>
+            <input name="chavePix" placeholder="CNPJ, e-mail, telefone ou chave aleatória" />
+          </div>
+        </div>
+        <div class="row row-2">
+          <div class="field">
+            <label>Data do contrato</label>
+            <input name="dataRating" type="date" />
+          </div>
+          <div class="field">
+            <label>Foro de Eleição</label>
+            <input name="foroRating" value="Brasília, DF" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== CONTRATADA (both) ===== -->
       <div class="group">
         <div class="group-title">
           <span>Contratada</span>
@@ -605,15 +766,33 @@
             <input name="enderecoContratada" value="Q CNM 2, Bloco B, s/n, Sala 106-F" />
           </div>
         </div>
+
+        <!-- Contract 2 only: representante -->
+        <div class="row" data-only="2">
+          <div class="field">
+            <label>Nome fantasia</label>
+            <input name="nomeFantasia" value="JUSTHELP" />
+          </div>
+        </div>
+        <div class="row" data-only="2">
+          <div class="field">
+            <label>Sócio-gerente (representante)</label>
+            <input name="representante" placeholder="Nome completo do representante" />
+          </div>
+        </div>
       </div>
 
     </form>
 
     <div class="actions">
-      <button class="btn btn-primary" id="printBtn">Imprimir / Salvar PDF</button>
+      <div class="print-tip">
+        <strong>Dica para impressão</strong><br>
+        Em "Mais configurações" do diálogo de impressão, desmarque "Cabeçalhos e rodapés" para remover a data/URL.
+      </div>
+      <button class="btn btn-primary" id="printBtn" type="button">Imprimir / Salvar PDF</button>
       <div class="btn-row">
-        <button class="btn btn-secondary" id="downloadBtn">Baixar HTML</button>
-        <button class="btn btn-secondary" id="resetBtn">Limpar</button>
+        <button class="btn btn-secondary" id="downloadBtn" type="button">Baixar HTML</button>
+        <button class="btn btn-secondary" id="resetBtn" type="button">Limpar</button>
       </div>
     </div>
   </aside>
@@ -625,7 +804,8 @@
       <span class="live"><span class="live-dot"></span>Atualizando ao vivo</span>
     </div>
 
-    <article class="doc" id="doc">
+    <!-- =============== CONTRACT 1: LIMPEZA DE NOME =============== -->
+    <article class="doc" id="doc1" data-contract="1">
       <h1 class="doc-title">Contrato de Prestação de Serviços</h1>
       <div class="doc-ornament">§ &nbsp; · &nbsp; §</div>
 
@@ -693,8 +873,73 @@
           <div class="sig-label">(Contratada)</div>
         </div>
       </div>
-
     </article>
+
+    <!-- =============== CONTRACT 2: RATING COMERCIAL =============== -->
+    <article class="doc" id="doc2" data-contract="2">
+      <h1 class="doc-title">Contrato de Prestação de Serviços</h1>
+      <div class="doc-subtitle">Aumento de Rating Comercial — Concentre Serasa</div>
+      <div class="doc-ornament">§ &nbsp; · &nbsp; §</div>
+
+      <p>No momento em que assinam este instrumento particular, CONTRATANTE e CONTRATADA, têm, entre si, justo e contratado, o presente contrato de prestação de serviços profissionais que se regerá pelos seguintes termos:</p>
+
+      <p>
+        <strong>CONTRATADA:</strong> <strong data-bind="nomeFantasia">JUSTHELP</strong>, nome fantasia de <strong data-bind="razao">JUSTHELP ASSESSORIA BR LTDA</strong>, pessoa jurídica de direito privado, inscrita no CNPJ sob o n. <span data-bind="cnpj" class="placeholder">26.986.110/0001-68</span>, situada em <span data-bind="enderecoContratada" class="placeholder">Q CNM 2, Bloco B, s/n, Sala 106-F</span>, neste ato representada por seu sócio-gerente <span data-bind="representante" data-empty="[Nome do representante]" class="placeholder empty">[Nome do representante]</span>, doravante denominada <strong>CONTRATADA</strong>.
+      </p>
+
+      <p>
+        <strong>CONTRATANTE:</strong> <strong data-bind="nome" data-empty="[Nome Completo / Razão Social]" class="placeholder empty">[Nome Completo / Razão Social]</strong>, brasileiro(a), <span data-bind="profissao" data-empty="empresário(a)" class="placeholder">empresário(a)</span>, inscrito(a) no CPF/CNPJ sob o nº <span data-bind="cpfCnpj" data-empty="[CPF/CNPJ]" class="placeholder empty">[CPF/CNPJ]</span>, residente e domiciliado(a) em <span data-bind="enderecoCompletoRating" data-empty="[endereço completo]" class="placeholder empty">[endereço completo]</span>, doravante denominado(a) simplesmente como <strong>CONTRATANTE</strong>.
+      </p>
+
+      <div class="clause-title">Objeto</div>
+      <p><strong>CLÁUSULA PRIMEIRA.</strong> A CONTRATADA prestará serviços administrativos ao CONTRATANTE visando o aumento do <strong>RATING</strong> no <strong>CONCENTRE do SERASA</strong>, garantindo um mínimo de <strong><span data-bind="ratingMin" data-empty="AA" class="placeholder">AA</span></strong>.</p>
+
+      <p>Parágrafo Primeiro – O serviço consiste na análise e estruturação documental necessária para a obtenção do rating desejado.</p>
+
+      <p>Parágrafo Segundo – O CONTRATANTE receberá um relatório contendo a <strong>consulta do rating antes da entrega dos documentos</strong> e outra <strong>após a conclusão do serviço</strong>.</p>
+
+      <p>Parágrafo Terceiro – O prazo médio para a entrega do serviço é de <strong>30 (trinta) dias</strong> a partir do fornecimento de todos os documentos necessários. Após a conclusão, a atualização do rating nos bancos pode levar, em média, <strong>45 (quarenta e cinco) dias</strong>.</p>
+
+      <div class="clause-title">Honorários Profissionais e Remuneração</div>
+      <p><strong>CLÁUSULA SEGUNDA.</strong> O valor estabelecido para o serviço de aumento do <strong>RATING no CONCENTRE do SERASA</strong> é de <strong><span data-bind="valorRatingFmt" data-empty="R$ [valor]" class="placeholder empty">R$ [valor]</span></strong> <span data-bind="valorExtensoFmt" data-empty="" class="placeholder">(por extenso)</span>, a ser pago conforme as instruções abaixo:</p>
+
+      <p style="padding-left: 24px;">• <strong>PIX:</strong> <span data-bind="chavePix" data-empty="[Chave PIX]" class="placeholder empty">[Chave PIX]</span></p>
+
+      <div class="clause-title">Responsabilidade e Limitação</div>
+      <p><strong>CLÁUSULA TERCEIRA.</strong> A CONTRATADA se responsabiliza apenas pela entrega do serviço conforme especificado no presente contrato.</p>
+
+      <p>Parágrafo Primeiro – Após a conclusão do serviço, a CONTRATADA <strong>não será responsabilizada por eventual redução do rating do CONTRATANTE</strong>, especialmente se este adotar <strong>práticas financeiras inadequadas ou de alto risco</strong>.</p>
+
+      <p>Parágrafo Segundo – A CONTRATADA <strong>não garante a permanência do rating obtido</strong>, pois este está sujeito às políticas e análises do mercado financeiro e dos bancos envolvidos.</p>
+
+      <div class="clause-title">Foro</div>
+      <p><strong>CLÁUSULA QUARTA.</strong> As partes elegem o foro da Comarca de <strong><span data-bind="foroRatingFmt" data-empty="Brasília" class="placeholder">Brasília</span></strong> para a solução de quaisquer questões judiciais decorrentes deste contrato.</p>
+
+      <p style="margin-top: 24px;">E, por estarem justos e contratados, firmam o presente instrumento em duas vias de igual teor, juntamente com duas testemunhas.</p>
+
+      <p class="date-line"><span data-bind="dataRatingFmt" data-empty="[Data por extenso]" class="placeholder empty">[Data por extenso]</span></p>
+
+      <div class="signatures">
+        <div class="sig">
+          <div class="sig-meta">
+            <strong>Nome:</strong> <span data-bind="nome" data-empty="[Nome Completo]">[Nome Completo]</span><br>
+            <strong>CPF/CNPJ:</strong> <span data-bind="cpfCnpj" data-empty="[Número]">[Número]</span>
+          </div>
+          <div class="sig-line" style="margin-top: 24px;"></div>
+          <div class="sig-label">(Contratante)</div>
+        </div>
+        <div class="sig">
+          <div class="sig-meta">
+            <strong>Razão Social:</strong> <span data-bind="razao">JUSTHELP ASSESSORIA BR LTDA</span><br>
+            <strong>CNPJ:</strong> <span data-bind="cnpj">26.986.110/0001-68</span><br>
+            <strong>Nome:</strong> <span data-bind="representante" data-empty="[Nome do representante]">[Nome do representante]</span>
+          </div>
+          <div class="sig-line" style="margin-top: 24px;"></div>
+          <div class="sig-label">(Contratada)</div>
+        </div>
+      </div>
+    </article>
+
   </main>
 </div>
 
@@ -708,11 +953,11 @@
 <script>
 (() => {
   const form = document.getElementById('form');
-  const doc = document.getElementById('doc');
   const toast = document.getElementById('toast');
   const parcelaRow = document.getElementById('parcelaRow');
   const clausula41 = document.getElementById('clausula41');
   const cepStatus = document.getElementById('cepStatus');
+  const body = document.body;
 
   // ---- Helpers ----
   const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
@@ -767,6 +1012,21 @@
     return parts.join(', ');
   }
 
+  function buildEnderecoCompleto(data) {
+    // For contract 2: full address including city/uf/cep
+    const parts = [];
+    if (data.logradouro) parts.push(data.logradouro);
+    if (data.numero) parts.push(data.numero);
+    if (data.complemento) parts.push(data.complemento);
+    if (data.bairro) parts.push(data.bairro);
+    let cityPart = '';
+    if (data.cidade) cityPart = data.cidade;
+    if (data.uf) cityPart += (cityPart ? '/' : '') + data.uf;
+    if (cityPart) parts.push(cityPart);
+    if (data.cep) parts.push('CEP ' + data.cep);
+    return parts.join(', ');
+  }
+
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, c => ({
       '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
@@ -805,21 +1065,19 @@
         setCepStatus('CEP não encontrado', 'error');
         return;
       }
-      // Fill fields only if they help; preserve user-typed número/complemento
       if (data.logradouro) form.logradouro.value = data.logradouro;
       if (data.bairro) form.bairro.value = data.bairro;
       if (data.localidade) form.cidade.value = data.localidade;
       if (data.uf) form.uf.value = data.uf;
       setCepStatus('endereço preenchido ✓', 'success');
       render();
-      // Move focus to número for fluid filling
       if (!form.numero.value) form.numero.focus();
     } catch (e) {
       setCepStatus('falha — verifique a internet', 'error');
     }
   }
 
-  // ---- Render dynamic Clause 4.1 ----
+  // ---- Render dynamic Clause 4.1 (contract 1) ----
   function renderClausula41(modalidade, data) {
     const valorNum = parseMoney(data.valor);
     const entradaNum = parseMoney(data.entrada);
@@ -848,8 +1106,18 @@
     }
   }
 
+  // ---- Get current contract type ----
+  function getContractType() {
+    const checked = form.querySelector('input[name="contractType"]:checked');
+    return checked ? checked.value : '1';
+  }
+
   // ---- Render full document ----
   function render() {
+    const contractType = getContractType();
+    body.classList.toggle('contract-1', contractType === '1');
+    body.classList.toggle('contract-2', contractType === '2');
+
     const data = Object.fromEntries(new FormData(form));
     const modalidade = data.modalidade || 'vista';
 
@@ -859,15 +1127,25 @@
       parcelaRow.classList.remove('open');
     }
 
+    // Build computed fields for both docs
+    const valorExtensoText = data.valorExtenso ? `(${data.valorExtenso})` : '';
     const computed = {
       ...data,
+      // Contract 1
       enderecoCompleto: buildEndereco(data),
       valorFmt: formatMoney(data.valor),
       dataFmt: formatDate(data.data),
-      foroFmt: data.foro || ''
+      foroFmt: data.foro || '',
+      // Contract 2
+      enderecoCompletoRating: buildEnderecoCompleto(data),
+      valorRatingFmt: formatMoney(data.valorRating),
+      valorExtensoFmt: valorExtensoText,
+      dataRatingFmt: formatDate(data.dataRating),
+      foroRatingFmt: data.foroRating || ''
     };
 
-    doc.querySelectorAll('[data-bind]').forEach(el => {
+    // Render both documents (only visible one is shown via CSS)
+    document.querySelectorAll('.doc [data-bind]').forEach(el => {
       const key = el.getAttribute('data-bind');
       const empty = el.getAttribute('data-empty') || '';
       const value = computed[key] || '';
@@ -882,7 +1160,7 @@
       }
     });
 
-    // Update print footer dynamically (in case razão / CNPJ change)
+    // Update print footer
     document.querySelectorAll('[data-bind-footer]').forEach(el => {
       const key = el.getAttribute('data-bind-footer');
       if (data[key]) el.textContent = data[key];
@@ -893,22 +1171,44 @@
 
   // ---- Input masks ----
   function attachMasks() {
-    const cpf = form.cpf;
-    cpf.addEventListener('input', e => {
-      let v = e.target.value.replace(/\D/g, '').slice(0, 11);
-      v = v.replace(/(\d{3})(\d)/, '$1.$2')
-           .replace(/(\d{3})(\d)/, '$1.$2')
-           .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-      e.target.value = v;
-    });
+    // CPF mask (contract 1)
+    if (form.cpf) {
+      form.cpf.addEventListener('input', e => {
+        let v = e.target.value.replace(/\D/g, '').slice(0, 11);
+        v = v.replace(/(\d{3})(\d)/, '$1.$2')
+             .replace(/(\d{3})(\d)/, '$1.$2')
+             .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+        e.target.value = v;
+      });
+    }
 
+    // CPF/CNPJ smart mask (contract 2) — formats as CPF for ≤11 digits, CNPJ for 12-14
+    if (form.cpfCnpj) {
+      form.cpfCnpj.addEventListener('input', e => {
+        let v = e.target.value.replace(/\D/g, '').slice(0, 14);
+        if (v.length <= 11) {
+          // CPF format
+          v = v.replace(/(\d{3})(\d)/, '$1.$2')
+               .replace(/(\d{3})(\d)/, '$1.$2')
+               .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+        } else {
+          // CNPJ format
+          v = v.replace(/^(\d{2})(\d)/, '$1.$2')
+               .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+               .replace(/\.(\d{3})(\d)/, '.$1/$2')
+               .replace(/(\d{4})(\d)/, '$1-$2');
+        }
+        e.target.value = v;
+      });
+    }
+
+    // CEP mask
     const cep = form.cep;
     cep.addEventListener('input', e => {
       let v = e.target.value.replace(/\D/g, '').slice(0, 8);
       const formatted = v.replace(/(\d{5})(\d)/, '$1-$2');
       e.target.value = formatted;
 
-      // Debounce CEP lookup — fires when 8 digits are present
       clearTimeout(cepLookupTimer);
       if (v.length === 8) {
         cepLookupTimer = setTimeout(() => lookupCep(v), 250);
@@ -918,62 +1218,90 @@
       }
     });
 
-    // Also trigger on blur (in case of paste etc.)
     cep.addEventListener('blur', e => {
       const v = e.target.value.replace(/\D/g, '');
       if (v.length === 8) lookupCep(v);
     });
 
+    // UF uppercase
     const uf = form.uf;
     uf.addEventListener('input', e => {
       e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2);
     });
 
-    const valor = form.valor;
-    valor.addEventListener('blur', e => {
-      const num = parseMoney(e.target.value);
-      if (!isNaN(num)) {
-        e.target.value = num.toFixed(2).replace('.', ',');
+    // Money fields blur formatting
+    ['valor', 'entrada', 'valorRating'].forEach(name => {
+      if (form[name]) {
+        form[name].addEventListener('blur', e => {
+          const num = parseMoney(e.target.value);
+          if (!isNaN(num)) {
+            e.target.value = num.toFixed(2).replace('.', ',');
+          }
+        });
       }
     });
 
-    const entrada = form.entrada;
-    entrada.addEventListener('blur', e => {
-      const num = parseMoney(e.target.value);
-      if (!isNaN(num)) {
-        e.target.value = num.toFixed(2).replace('.', ',');
-      }
-    });
+    // CNPJ mask (contratada)
+    if (form.cnpj) {
+      form.cnpj.addEventListener('input', e => {
+        let v = e.target.value.replace(/\D/g, '').slice(0, 14);
+        v = v.replace(/^(\d{2})(\d)/, '$1.$2')
+             .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+             .replace(/\.(\d{3})(\d)/, '.$1/$2')
+             .replace(/(\d{4})(\d)/, '$1-$2');
+        e.target.value = v;
+      });
+    }
   }
 
-  // ---- Actions ----
+  // ---- Toast ----
   function showToast(msg) {
     toast.textContent = msg;
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 2200);
   }
 
+  // ---- Print: temporarily clear title to remove "JustHelp" from browser header ----
   document.getElementById('printBtn').addEventListener('click', () => {
+    const originalTitle = document.title;
+    // Setting to a single space hides the title from most browsers' print headers
+    document.title = ' ';
+
+    const restore = () => {
+      document.title = originalTitle;
+      window.removeEventListener('afterprint', restore);
+    };
+    window.addEventListener('afterprint', restore);
+
+    // Safety fallback in case afterprint doesn't fire
+    setTimeout(restore, 60000);
+
     window.print();
   });
 
+  // ---- Download standalone HTML ----
   document.getElementById('downloadBtn').addEventListener('click', () => {
+    const contractType = getContractType();
     const data = Object.fromEntries(new FormData(form));
     const nome = (data.nome || 'contrato').trim().replace(/\s+/g, '_');
-    const filename = `Contrato_${nome}.html`;
+    const tipoLabel = contractType === '2' ? 'Rating' : 'Limpeza';
+    const filename = `Contrato_${tipoLabel}_${nome}.html`;
 
-    const docHtml = doc.outerHTML;
+    const docEl = document.getElementById(contractType === '2' ? 'doc2' : 'doc1');
+    const docHtml = docEl.outerHTML;
     const razao = escapeHtml(data.razao || 'JUSTHELP ASSESSORIA BR LTDA');
     const cnpj = escapeHtml(data.cnpj || '26.986.110/0001-68');
+    const titleClient = escapeHtml(data.nome || '');
 
     const standalone = `<!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="UTF-8"><title>Contrato — ${escapeHtml(data.nome || '')}</title>
+<html lang="pt-BR"><head><meta charset="UTF-8"><title> </title>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Fraunces:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 body{margin:0;background:#ebe3d0;font-family:'EB Garamond',Georgia,serif;padding:40px 20px;}
-.doc{background:#fdfaf3;max-width:780px;margin:0 auto;padding:70px 80px;box-shadow:0 24px 60px -20px rgba(0,0,0,.45);font-size:14.5px;line-height:1.7;color:#18130c;position:relative;}
+.doc{background:#fdfaf3;max-width:780px;margin:0 auto;padding:70px 80px;box-shadow:0 24px 60px -20px rgba(0,0,0,.45);font-size:14.5px;line-height:1.7;color:#18130c;position:relative;display:block !important;}
 .doc::before{content:'';position:absolute;top:28px;left:28px;right:28px;bottom:28px;border:1px solid rgba(176,138,62,.25);pointer-events:none;}
 .doc-title{font-family:'Fraunces',serif;font-weight:600;font-size:28px;text-align:center;margin:0 0 8px;}
+.doc-subtitle{font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:14px;text-align:center;color:#b08a3e;margin-bottom:4px;}
 .doc-ornament{text-align:center;margin-bottom:32px;color:#b08a3e;font-size:18px;letter-spacing:.4em;}
 .doc p{text-align:justify;margin:0 0 12px;}
 .clause-title{font-family:'Fraunces',serif;font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:.08em;margin:24px 0 12px;}
@@ -983,6 +1311,7 @@ body{margin:0;background:#ebe3d0;font-family:'EB Garamond',Georgia,serif;padding
 .signatures{margin-top:50px;display:grid;gap:50px;}
 .sig{text-align:center;}
 .sig-email{font-style:italic;margin-bottom:28px;color:#4a463f;}
+.sig-meta{font-style:italic;color:#4a463f;font-size:13px;margin-top:4px;}
 .sig-line{border-top:1px solid #18130c;width:70%;margin:0 auto 8px;}
 .sig-label{font-family:'Fraunces',serif;font-weight:600;font-size:12px;letter-spacing:.12em;text-transform:uppercase;}
 .print-footer{display:none;}
@@ -1010,15 +1339,21 @@ body{margin:0;background:#ebe3d0;font-family:'EB Garamond',Georgia,serif;padding
     showToast('Arquivo baixado: ' + filename);
   });
 
+  // ---- Reset ----
   document.getElementById('resetBtn').addEventListener('click', () => {
     if (!confirm('Deseja limpar todos os campos do contratante?')) return;
-    ['nome','cpf','rg','email','logradouro','numero','complemento','bairro','cidade','uf','cep','entrada'].forEach(n => {
+    ['nome','cpf','rg','cpfCnpj','email','logradouro','numero','complemento','bairro','cidade','uf','cep','entrada','valorRating','valorExtenso','chavePix','representante'].forEach(n => {
       if (form[n]) form[n].value = '';
     });
-    form.modalidade.value = 'vista';
-    form.valor.value = '599,00';
-    form.data.value = new Date().toISOString().slice(0,10);
-    form.foro.value = 'Ceilândia, DF';
+    if (form.modalidade) form.modalidade.value = 'vista';
+    if (form.valor) form.valor.value = '599,00';
+    if (form.data) form.data.value = new Date().toISOString().slice(0,10);
+    if (form.foro) form.foro.value = 'Ceilândia, DF';
+    if (form.dataRating) form.dataRating.value = new Date().toISOString().slice(0,10);
+    if (form.foroRating) form.foroRating.value = 'Brasília, DF';
+    if (form.ratingMin) form.ratingMin.value = 'AA';
+    if (form.profissao) form.profissao.value = 'empresário(a)';
+    if (form.nomeFantasia) form.nomeFantasia.value = 'JUSTHELP';
     setCepStatus('auto‑preenche', '');
     lastLookedUpCep = '';
     render();
@@ -1030,6 +1365,7 @@ body{margin:0;background:#ebe3d0;font-family:'EB Garamond',Georgia,serif;padding
   form.valor.value = '599,00';
   form.data.value = new Date().toISOString().slice(0,10);
   form.foro.value = 'Ceilândia, DF';
+  form.dataRating.value = new Date().toISOString().slice(0,10);
   attachMasks();
   form.addEventListener('input', render);
   form.addEventListener('change', render);
