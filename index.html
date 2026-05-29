@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gerador de Contrato — JustHelp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f6f1e7;
+    --paper-soft: #efe8d8;
+    --ink: #161513;
+    --ink-soft: #4a463f;
+    --rule: #d8cdb4;
+    --accent: #7d1c2f;
+    --accent-soft: #a7384e;
+    --gold: #b08a3e;
+    --panel: #1c1a17;
+    --panel-soft: #26231f;
+    --panel-text: #ece4d2;
+    --panel-mute: #8a8273;
+    --field-bg: #2f2b26;
+    --field-border: #3b3630;
+    --field-focus: #b08a3e;
+    --shadow: 0 24px 60px -20px rgba(0,0,0,0.45), 0 8px 20px -8px rgba(0,0,0,0.25);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Manrope', system-ui, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    overflow: hidden;
+  }
+  .app {
+    display: grid;
+    grid-template-columns: minmax(380px, 440px) 1fr;
+    height: 100vh;
+  }
+
+  /* ===== LEFT PANEL (FORM) ===== */
+  .panel {
+    background: var(--panel);
+    color: var(--panel-text);
+    overflow-y: auto;
+    border-right: 1px solid #000;
+    display: flex;
+    flex-direction: column;
+  }
+  .panel::-webkit-scrollbar { width: 8px; }
+  .panel::-webkit-scrollbar-track { background: var(--panel); }
+  .panel::-webkit-scrollbar-thumb { background: var(--field-border); border-radius: 4px; }
+
+  .brand {
+    padding: 28px 32px 22px;
+    border-bottom: 1px solid var(--field-border);
+    position: sticky; top: 0;
+    background: var(--panel);
+    z-index: 5;
+  }
+  .brand-mark {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 6px;
+  }
+  .brand-seal {
+    width: 38px; height: 38px;
+    border: 1.5px solid var(--gold);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 700;
+    color: var(--gold);
+    font-size: 18px;
+    letter-spacing: -0.02em;
+  }
+  .brand-name {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 19px;
+    letter-spacing: -0.01em;
+    color: var(--panel-text);
+  }
+  .brand-name em {
+    font-style: italic;
+    font-weight: 500;
+    color: var(--gold);
+  }
+  .brand-sub {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--panel-mute);
+    margin-left: 50px;
+  }
+
+  .form {
+    padding: 26px 32px 32px;
+    flex: 1;
+  }
+  .group {
+    margin-bottom: 26px;
+  }
+  .group-title {
+    font-family: 'Fraunces', serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--gold);
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed var(--field-border);
+    display: flex; align-items: baseline; justify-content: space-between;
+  }
+  .group-num {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--panel-mute);
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 13px;
+  }
+  .row { display: grid; gap: 10px; margin-bottom: 10px; }
+  .row-2 { grid-template-columns: 1fr 1fr; }
+  .row-3 { grid-template-columns: 2fr 1fr 1fr; }
+  .field { display: flex; flex-direction: column; }
+  .field label {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--panel-mute);
+    margin-bottom: 5px;
+    font-weight: 500;
+  }
+  .field input, .field textarea {
+    background: var(--field-bg);
+    border: 1px solid var(--field-border);
+    border-radius: 4px;
+    padding: 10px 12px;
+    color: var(--panel-text);
+    font-family: 'Manrope', sans-serif;
+    font-size: 13.5px;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .field input:focus, .field textarea:focus {
+    outline: none;
+    border-color: var(--field-focus);
+    background: #34302a;
+  }
+  .field input::placeholder { color: #5a5447; }
+
+  /* Action bar */
+  .actions {
+    position: sticky; bottom: 0;
+    background: linear-gradient(to top, var(--panel) 70%, rgba(28,26,23,0));
+    padding: 22px 32px 26px;
+    display: flex; flex-direction: column; gap: 10px;
+    border-top: 1px solid var(--field-border);
+  }
+  .btn {
+    border: none;
+    padding: 13px 18px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: transform 0.08s, background 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff5e8;
+    border: 1px solid var(--accent);
+  }
+  .btn-primary:hover { background: var(--accent-soft); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--panel-text);
+    border: 1px solid var(--field-border);
+  }
+  .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* ===== RIGHT PANEL (PREVIEW) ===== */
+  .stage {
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(125,28,47,0.06), transparent 60%),
+      linear-gradient(180deg, #ebe3d0 0%, #e1d7be 100%);
+    overflow-y: auto;
+    padding: 40px 60px 80px;
+    position: relative;
+  }
+  .stage::-webkit-scrollbar { width: 10px; }
+  .stage::-webkit-scrollbar-track { background: transparent; }
+  .stage::-webkit-scrollbar-thumb { background: #c8bca0; border-radius: 5px; }
+
+  .stage-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 28px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--ink-soft);
+  }
+  .stage-bar .live {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .live-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px rgba(125,28,47,0.15);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(125,28,47,0.15); }
+    50% { box-shadow: 0 0 0 7px rgba(125,28,47,0.05); }
+  }
+
+  /* The document */
+  .doc {
+    background: #fdfaf3;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 70px 80px 80px;
+    box-shadow: var(--shadow);
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: #18130c;
+    position: relative;
+    min-height: 1100px;
+  }
+  .doc::before {
+    content: '';
+    position: absolute;
+    top: 28px; left: 28px; right: 28px; bottom: 28px;
+    border: 1px solid rgba(176, 138, 62, 0.25);
+    pointer-events: none;
+  }
+  .doc-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 28px;
+    text-align: center;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+    color: #18130c;
+  }
+  .doc-ornament {
+    text-align: center;
+    margin-bottom: 32px;
+    color: var(--gold);
+    font-size: 18px;
+    letter-spacing: 0.4em;
+  }
+  .doc p {
+    text-align: justify;
+    margin-bottom: 12px;
+    text-indent: 0;
+    hyphens: auto;
+  }
+  .doc .clause-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 24px 0 12px;
+    color: #18130c;
+  }
+  .doc strong { font-weight: 700; }
+  .doc .placeholder {
+    background: rgba(176, 138, 62, 0.18);
+    padding: 0 4px;
+    border-radius: 2px;
+    transition: background 0.2s;
+  }
+  .doc .placeholder.empty {
+    background: rgba(125, 28, 47, 0.12);
+    color: #7d1c2f;
+    font-style: italic;
+  }
+  .doc .date-line {
+    text-align: right;
+    margin: 36px 0 60px;
+  }
+  .doc .signatures {
+    margin-top: 50px;
+    display: grid;
+    gap: 50px;
+  }
+  .sig {
+    text-align: center;
+  }
+  .sig-email {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    margin-bottom: 28px;
+    color: #4a463f;
+  }
+  .sig-line {
+    border-top: 1px solid #18130c;
+    width: 70%;
+    margin: 0 auto 8px;
+  }
+  .sig-label {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--panel);
+    color: var(--panel-text);
+    padding: 12px 22px;
+    border-radius: 6px;
+    font-size: 13px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    z-index: 100;
+    border: 1px solid var(--gold);
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Print */
+  @media print {
+    @page { size: A4; margin: 18mm; }
+    body { background: white; overflow: visible; }
+    .app { display: block; height: auto; }
+    .panel, .stage-bar, .actions { display: none !important; }
+    .stage {
+      background: white;
+      padding: 0;
+      overflow: visible;
+      height: auto;
+    }
+    .doc {
+      box-shadow: none;
+      max-width: none;
+      padding: 0;
+      min-height: 0;
+      font-size: 11pt;
+      line-height: 1.55;
+    }
+    .doc::before { display: none; }
+    .doc-title { font-size: 20pt; }
+    .doc .clause-title { font-size: 11pt; margin: 16px 0 8px; }
+    .doc .placeholder { background: transparent; }
+    .doc .placeholder.empty { background: transparent; color: inherit; font-style: normal; }
+    .sig-email { margin-bottom: 18px; }
+    .doc .signatures { gap: 30px; }
+  }
+
+  /* Smaller screens */
+  @media (max-width: 1000px) {
+    .app { grid-template-columns: 1fr; }
+    .panel { max-height: 50vh; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============ FORM PANEL ============ -->
+  <aside class="panel">
+    <div class="brand">
+      <div class="brand-mark">
+        <div class="brand-seal">JH</div>
+        <div class="brand-name">JustHelp <em>Assessoria</em></div>
+      </div>
+      <div class="brand-sub">Gerador de Contratos</div>
+    </div>
+
+    <form class="form" id="form" autocomplete="off">
+
+      <div class="group">
+        <div class="group-title">
+          <span>Contratante</span>
+          <span class="group-num">i.</span>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Nome completo</label>
+            <input name="nome" placeholder="Nome do contratante" />
+          </div>
+        </div>
+        <div class="row row-2">
+          <div class="field">
+            <label>CPF</label>
+            <input name="cpf" placeholder="000.000.000-00" />
+          </div>
+          <div class="field">
+            <label>RG</label>
+            <input name="rg" placeholder="00.000.000" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>E-mail</label>
+            <input name="email" type="email" placeholder="email@exemplo.com" />
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-title">
+          <span>Endereço</span>
+          <span class="group-num">ii.</span>
+        </div>
+        <div class="row row-3">
+          <div class="field">
+            <label>Logradouro</label>
+            <input name="logradouro" placeholder="Rua, avenida..." />
+          </div>
+          <div class="field">
+            <label>Número</label>
+            <input name="numero" placeholder="123" />
+          </div>
+          <div class="field">
+            <label>Bairro</label>
+            <input name="bairro" placeholder="Bairro" />
+          </div>
+        </div>
+        <div class="row row-3">
+          <div class="field">
+            <label>Cidade</label>
+            <input name="cidade" placeholder="Cidade" />
+          </div>
+          <div class="field">
+            <label>UF</label>
+            <input name="uf" placeholder="SC" maxlength="2" />
+          </div>
+          <div class="field">
+            <label>CEP</label>
+            <input name="cep" placeholder="00000-000" />
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-title">
+          <span>Contrato</span>
+          <span class="group-num">iii.</span>
+        </div>
+        <div class="row row-2">
+          <div class="field">
+            <label>Valor (R$)</label>
+            <input name="valor" placeholder="599,00" />
+          </div>
+          <div class="field">
+            <label>Data</label>
+            <input name="data" type="date" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Foro de Eleição</label>
+            <input name="foro" placeholder="Ceilândia, DF" />
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-title">
+          <span>Contratada</span>
+          <span class="group-num">iv.</span>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Razão Social</label>
+            <input name="razao" value="JUSTHELP ASSESSORIA BR LTDA" />
+          </div>
+        </div>
+        <div class="row row-2">
+          <div class="field">
+            <label>CNPJ</label>
+            <input name="cnpj" value="26.986.110/0001-68" />
+          </div>
+          <div class="field">
+            <label>E-mail</label>
+            <input name="emailContratada" value="justhelpfinanceiro@gmail.com" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Endereço</label>
+            <input name="enderecoContratada" value="Q CNM 2, Bloco B, s/n, Sala 106-F" />
+          </div>
+        </div>
+      </div>
+
+    </form>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="printBtn">Imprimir / Salvar PDF</button>
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="downloadBtn">Baixar HTML</button>
+        <button class="btn btn-secondary" id="resetBtn">Limpar</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ DOCUMENT PREVIEW ============ -->
+  <main class="stage">
+    <div class="stage-bar">
+      <span>Pré-visualização</span>
+      <span class="live"><span class="live-dot"></span>Atualizando ao vivo</span>
+    </div>
+
+    <article class="doc" id="doc">
+      <h1 class="doc-title">Contrato de Prestação de Serviços</h1>
+      <div class="doc-ornament">§ &nbsp; · &nbsp; §</div>
+
+      <p>
+        <strong data-bind="razao">JUSTHELP ASSESSORIA BR LTDA</strong>, pessoa jurídica de direito privado, inscrita no CNPJ sob o n. <span data-bind="cnpj" class="placeholder">26.986.110/0001-68</span>, com escritório profissional no município de <span data-bind="enderecoContratada" class="placeholder">Q CNM 2, Bloco B, s/n, Sala 106-F</span>, doravante denominada <strong>CONTRATADA</strong>; e
+      </p>
+
+      <p>
+        <strong data-bind="nome" data-empty="[Nome do Contratante]" class="placeholder empty">[Nome do Contratante]</strong>, inscrito(a) no CPF sob o n. <span data-bind="cpf" data-empty="[CPF]" class="placeholder empty">[CPF]</span> e RG <span data-bind="rg" data-empty="[RG]" class="placeholder empty">[RG]</span> residente e domiciliado(a) no município de <span data-bind="cidade" data-empty="[Cidade]" class="placeholder empty">[Cidade]</span>, Estado de <span data-bind="uf" data-empty="[UF]" class="placeholder empty">[UF]</span>, à <span data-bind="enderecoCompleto" data-empty="[Endereço completo]" class="placeholder empty">[Endereço completo]</span>, CEP <span data-bind="cep" data-empty="[CEP]" class="placeholder empty">[CEP]</span> doravante denominada <strong>CONTRATANTE</strong>;
+      </p>
+
+      <p>Decidem as partes, na melhor forma de direito, celebrar o presente <strong>CONTRATO DE PRESTAÇÃO DE SERVIÇOS</strong>, que reger-se-á mediante às cláusulas e condições adiante estipuladas.</p>
+
+      <div class="clause-title">Cláusula Primeira — Do Objeto</div>
+      <p>O presente contrato tem como objeto a prestação de serviços de consultoria e assessoria jurídica em favor da CONTRATANTE pela CONTRATADA, sendo esta última a responsável pela retirada das restrições que constam perante os órgãos de proteção ao crédito, restauração de score e acompanhamento de processo administrativo ou judicial em face dos órgãos de controle de crédito.</p>
+
+      <div class="clause-title">Cláusula Segunda — Das Obrigações da Contratada</div>
+      <p>2.1 – A CONTRATADA compromete-se a prestar os serviços solicitados pela CONTRATANTE conforme descrito na Cláusula Primeira – Do Objeto.</p>
+      <p>2.2 – O prazo para efetiva execução do serviço do objeto deste contrato é de 30 (trinta) a 60 (sessenta) dias úteis, a contar do pagamento e da entrega da documentação necessária para a propositura da ação.</p>
+      <p>2.3 – Até o final do prazo, a CONTRATADA deverá entregar o NADA CONSTA dos birôs de consulta dos órgãos de proteção ao crédito à CONTRATANTE.</p>
+      <p>2.4 – Na prestação de serviços, a CONTRATADA deverá manter sigilo total de todas as informações fornecidas pela CONTRATANTE, utilizando-se delas unicamente para fins de cumprimento do objeto do presente contrato.</p>
+      <p>2.5 – Não há garantia de crédito, mas a CONTRATADA compromete-se a diligenciar para que aumentem as chances do êxito.</p>
+      <p>2.6 – A CONTRATADA não garante a extensão dos efeitos da execução do serviço objeto do presente contrato às eventuais novas dívidas que a CONTRATANTE venha a incorrer, apenas as existentes no ato da contratação do serviço.</p>
+      <p>2.7 – A CONTRATADA não garante pontuação mínima ou máxima na retomada do score.</p>
+      <p>2.8 – Vale ressaltar que dentro da ação não serão feitas negociações, quitações, compras ou parcelamentos das dívidas. O serviço é baseado nos art. 42 e 43 do Código de Defesa do Consumidor (Lei n. 8.078/90).</p>
+      <p>2.9 – Salienta-se que a dívida ainda aparecerá internamente dentro da instituição credora e de visualização interna (cliente) no aplicativo do Serasa e/ou outros.</p>
+
+      <div class="clause-title">Cláusula Terceira — Das Obrigações da Contratante</div>
+      <p>3.1 – A CONTRATANTE se obriga a cumprir fielmente o pagamento dos honorários aqui acordados, sob pena de, em caso de mora, extinguir-se a relação contratual e ser levado o presente contrato à execução judicial.</p>
+      <p>3.2 – A CONTRATANTE desde já se declara ciente de que a ação em questão obedece a procedimento previsto no Código de Processo Civil, Código Civil e Código de Defesa do Consumidor, não possuindo a CONTRATADA, poder para abreviar a prestação jurisdicional.</p>
+      <p>3.3 – A CONTRATANTE fornecerá à CONTRATADA os documentos e meios necessários à comprovação processual do seu pretendido direito, sob pena de exclusão da responsabilidade causídico, inclusive dentro dos prazos legais.</p>
+
+      <div class="clause-title">Cláusula Quarta — Do Pagamento</div>
+      <p>4.1 – Pelo serviço objeto do presente contrato, a CONTRATANTE deverá pagar à CONTRATADA a quantia de pagamento via PIX à vista no valor de <span data-bind="valorFmt" data-empty="R$ [valor]" class="placeholder empty">R$ [valor]</span>, de forma irrevogável e irretratável.</p>
+      <p>4.2 – O pagamento é devido pela CONTRATANTE em favor da CONTRATADA por ação protocolada, ou seja, cada ação gera uma obrigação de pagamento nos valores constantes na cláusula anterior.</p>
+      <p>4.3 – O não cumprimento do pagamento fará a ação ser revogada, sem direito à devolução de qualquer quantia paga, incorrendo em multa contratual de 2% (dois por cento) sobre os valores devidos, atualização monetária pelo INPC e juros monetário de 1% ao mês.</p>
+
+      <div class="clause-title">Cláusula Quinta — Da Rescisão Contratual</div>
+      <p>5.1 – Em caso de desistência da ação por parte da CONTRATANTE, se a ação já estiver em andamento, não haverá devolução de qualquer quantia paga.</p>
+      <p>5.2 – A parte que descumprir qualquer das cláusulas deste contrato dará à outra o direito de rescindir o presente instrumento, cientificando-a com aviso prévio de 15 (quinze) dias, ficando desobrigada a parte inocente a dar continuidade a este contrato.</p>
+
+      <div class="clause-title">Cláusula Sexta — Disposições Gerais</div>
+      <p>6.1 – A retomada de relacionamento com o mercado financeiro é de 45 (quarenta e cinco) dias após a entrega do NADA CONSTA, ressaltando que não há a garantia de crédito conforme a cláusula segunda (2.5).</p>
+      <p>6.2 – A CONTRATANTE se responsabiliza por toda ou quaisquer tentativas frustradas de retomada no mercado antes do prazo de 45 (quarenta e cinco) dias, ciente de que esse ato poderá prejudicar a pontuação do Score.</p>
+      <p>6.3 – O principal PROPÓSITO da CONTRATADA ao prestar esse serviço é a restruturação da vida financeira da CONTRATANTE, para que esta tenha novos hábitos financeiros a fim de sair da inadimplência e se tornar uma boa consumidora. Sendo assim, a CONTRATANTE se compromete a ter uma boa conduta perante o mercado financeiro.</p>
+      <p>6.4 – O presente contrato é um título executivo extrajudicial conforme previsão legal e, em caso de inadimplemento da CONTRATANTE, permite a propositura de ação de execução autônoma para o recebimento dos honorários devidos e não pagos.</p>
+      <p>6.5 – Fica pactuada a total inexistência de vínculo trabalhista entre as partes, excluindo as obrigações previdenciárias e os encargos sociais, não havendo entre as partes qualquer tipo de relação de subordinação.</p>
+      <p>6.6 – Este contrato, cumpridas todas as formalidades legais, afasta a qualidade de empregado prevista no art. 3º da CLT, nos termos do art. 442-B da CLT.</p>
+      <p>6.7 – A tolerância, por qualquer das partes, com relação ao descumprimento de qualquer termo ou condição aqui ajustado, não será considerada como desistência em exigir o cumprimento de disposição nele contida, nem representará novação com relação à obrigação passada, presente ou futura, no tocante ao termo ou condição cujo descumprimento foi tolerado.</p>
+      <p>6.8 – Fica eleito o foro do município de <strong><span data-bind="foroFmt" data-empty="[FORO]" class="placeholder empty">[FORO]</span></strong>, com exclusão de qualquer outro, por mais privilegiado que seja, para dirimir eventuais conflitos oriundos do presente contrato.</p>
+
+      <p style="margin-top: 24px;">E, por assim estarem as partes justas e acordadas, assinam o presente contrato.</p>
+
+      <p class="date-line"><span data-bind="dataFmt" data-empty="[Data por extenso]" class="placeholder empty">[Data por extenso]</span></p>
+
+      <div class="signatures">
+        <div class="sig">
+          <div class="sig-email" data-bind="email" data-empty="[email do contratante]">[email do contratante]</div>
+          <div class="sig-line"></div>
+          <div class="sig-label">(Contratante)</div>
+        </div>
+        <div class="sig">
+          <div class="sig-email" data-bind="emailContratada">justhelpfinanceiro@gmail.com</div>
+          <div class="sig-line"></div>
+          <div class="sig-label">(Contratada)</div>
+        </div>
+      </div>
+
+    </article>
+  </main>
+</div>
+
+<div class="toast" id="toast">Pronto!</div>
+
+<script>
+(() => {
+  const form = document.getElementById('form');
+  const doc = document.getElementById('doc');
+  const toast = document.getElementById('toast');
+
+  // ---- Helpers ----
+  const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+
+  function capWords(s) {
+    return s.toLowerCase().split(' ').map(w => w ? w[0].toUpperCase() + w.slice(1) : '').join(' ');
+  }
+
+  function formatDate(iso) {
+    if (!iso) return '';
+    const [y, m, d] = iso.split('-').map(Number);
+    if (!y || !m || !d) return '';
+    return `${d} de ${capWords(MESES[m-1])} de ${y}.`;
+  }
+
+  function formatMoney(v) {
+    if (!v) return '';
+    // Accept "599,00", "599.00", "599"
+    const num = parseFloat(String(v).replace(/\./g, '').replace(',', '.'));
+    if (isNaN(num)) return '';
+    return 'R$ ' + num.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+
+  function buildEndereco(data) {
+    const parts = [];
+    if (data.logradouro) parts.push(data.logradouro);
+    if (data.numero) parts.push(data.numero);
+    if (data.bairro) parts.push(data.bairro);
+    return parts.join(', ');
+  }
+
+  // ---- Render ----
+  function render() {
+    const data = Object.fromEntries(new FormData(form));
+    const computed = {
+      ...data,
+      enderecoCompleto: buildEndereco(data),
+      valorFmt: formatMoney(data.valor),
+      dataFmt: formatDate(data.data),
+      foroFmt: data.foro || ''
+    };
+
+    doc.querySelectorAll('[data-bind]').forEach(el => {
+      const key = el.getAttribute('data-bind');
+      const empty = el.getAttribute('data-empty') || '';
+      const value = computed[key] || '';
+      if (value) {
+        el.textContent = value;
+        el.classList.remove('empty');
+      } else if (empty) {
+        el.textContent = empty;
+        el.classList.add('empty');
+      } else {
+        el.textContent = '';
+      }
+    });
+  }
+
+  // ---- Auto-format inputs as user types ----
+  function attachMasks() {
+    const cpf = form.cpf;
+    cpf.addEventListener('input', e => {
+      let v = e.target.value.replace(/\D/g, '').slice(0, 11);
+      v = v.replace(/(\d{3})(\d)/, '$1.$2')
+           .replace(/(\d{3})(\d)/, '$1.$2')
+           .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+      e.target.value = v;
+    });
+
+    const cep = form.cep;
+    cep.addEventListener('input', e => {
+      let v = e.target.value.replace(/\D/g, '').slice(0, 8);
+      v = v.replace(/(\d{5})(\d)/, '$1-$2');
+      e.target.value = v;
+    });
+
+    const uf = form.uf;
+    uf.addEventListener('input', e => {
+      e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2);
+    });
+
+    const valor = form.valor;
+    valor.addEventListener('blur', e => {
+      const num = parseFloat(String(e.target.value).replace(/\./g, '').replace(',', '.'));
+      if (!isNaN(num)) {
+        e.target.value = num.toFixed(2).replace('.', ',');
+      }
+    });
+  }
+
+  // ---- Actions ----
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  document.getElementById('printBtn').addEventListener('click', () => {
+    window.print();
+  });
+
+  document.getElementById('downloadBtn').addEventListener('click', () => {
+    const data = Object.fromEntries(new FormData(form));
+    const nome = (data.nome || 'contrato').trim().replace(/\s+/g, '_');
+    const filename = `Contrato_${nome}.html`;
+
+    // Build standalone HTML with just the document
+    const docHtml = doc.outerHTML;
+    const standalone = `<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><title>Contrato — ${data.nome || ''}</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Fraunces:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#ebe3d0;font-family:'EB Garamond',Georgia,serif;padding:40px 20px;}
+.doc{background:#fdfaf3;max-width:780px;margin:0 auto;padding:70px 80px;box-shadow:0 24px 60px -20px rgba(0,0,0,.45);font-size:14.5px;line-height:1.7;color:#18130c;position:relative;}
+.doc::before{content:'';position:absolute;top:28px;left:28px;right:28px;bottom:28px;border:1px solid rgba(176,138,62,.25);pointer-events:none;}
+.doc-title{font-family:'Fraunces',serif;font-weight:600;font-size:28px;text-align:center;margin:0 0 8px;}
+.doc-ornament{text-align:center;margin-bottom:32px;color:#b08a3e;font-size:18px;letter-spacing:.4em;}
+.doc p{text-align:justify;margin:0 0 12px;}
+.clause-title{font-family:'Fraunces',serif;font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:.08em;margin:24px 0 12px;}
+.placeholder{background:rgba(176,138,62,.18);padding:0 4px;border-radius:2px;}
+.placeholder.empty{background:rgba(125,28,47,.12);color:#7d1c2f;font-style:italic;}
+.date-line{text-align:right;margin:36px 0 60px;}
+.signatures{margin-top:50px;display:grid;gap:50px;}
+.sig{text-align:center;}
+.sig-email{font-style:italic;margin-bottom:28px;color:#4a463f;}
+.sig-line{border-top:1px solid #18130c;width:70%;margin:0 auto 8px;}
+.sig-label{font-family:'Fraunces',serif;font-weight:600;font-size:12px;letter-spacing:.12em;text-transform:uppercase;}
+@media print{@page{size:A4;margin:18mm;}body{background:#fff;padding:0;}.doc{box-shadow:none;max-width:none;padding:0;font-size:11pt;line-height:1.55;}.doc::before{display:none;}.placeholder{background:transparent;}.placeholder.empty{background:transparent;color:inherit;font-style:normal;}}
+</style></head><body>${docHtml}</body></html>`;
+
+    const blob = new Blob([standalone], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Arquivo baixado: ' + filename);
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    if (!confirm('Deseja limpar todos os campos do contratante?')) return;
+    ['nome','cpf','rg','email','logradouro','numero','bairro','cidade','uf','cep'].forEach(n => {
+      if (form[n]) form[n].value = '';
+    });
+    form.valor.value = '599,00';
+    form.data.value = new Date().toISOString().slice(0,10);
+    form.foro.value = 'Ceilândia, DF';
+    render();
+    showToast('Formulário limpo');
+  });
+
+  // ---- Init ----
+  form.valor.value = '599,00';
+  form.data.value = new Date().toISOString().slice(0,10);
+  form.foro.value = 'Ceilândia, DF';
+  attachMasks();
+  form.addEventListener('input', render);
+  render();
+})();
+</script>
+
+</body>
+</html>
