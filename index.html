@@ -136,7 +136,7 @@
     margin-bottom: 5px;
     font-weight: 500;
   }
-  .field input, .field textarea {
+  .field input, .field textarea, .field select {
     background: var(--field-bg);
     border: 1px solid var(--field-border);
     border-radius: 4px;
@@ -146,12 +146,41 @@
     font-size: 13.5px;
     transition: border-color 0.15s, background 0.15s;
   }
-  .field input:focus, .field textarea:focus {
+  .field input:focus, .field textarea:focus, .field select:focus {
     outline: none;
     border-color: var(--field-focus);
-    background: #34302a;
+    background-color: #34302a;
   }
   .field input::placeholder { color: #5a5447; }
+  .field input[readonly] {
+    color: var(--gold);
+    background: #26231f;
+    cursor: not-allowed;
+  }
+  .field select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b08a3e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 14px;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+
+  /* Collapsible row */
+  .row.collapsible {
+    max-height: 0;
+    overflow: hidden;
+    margin-bottom: 0;
+    opacity: 0;
+    transition: max-height 0.25s ease, opacity 0.2s ease, margin-bottom 0.25s ease;
+  }
+  .row.collapsible.open {
+    max-height: 120px;
+    opacity: 1;
+    margin-bottom: 10px;
+  }
 
   /* Action bar */
   .actions {
@@ -457,20 +486,37 @@
 
       <div class="group">
         <div class="group-title">
-          <span>Contrato</span>
+          <span>Contrato &amp; Pagamento</span>
           <span class="group-num">iii.</span>
         </div>
         <div class="row row-2">
           <div class="field">
-            <label>Valor (R$)</label>
-            <input name="valor" placeholder="599,00" />
+            <label>Modalidade</label>
+            <select name="modalidade">
+              <option value="vista">À vista (PIX)</option>
+              <option value="parcelado">Parcelado em 2x (PIX)</option>
+            </select>
           </div>
           <div class="field">
-            <label>Data</label>
-            <input name="data" type="date" />
+            <label>Valor Total (R$)</label>
+            <input name="valor" placeholder="599,00" />
           </div>
         </div>
-        <div class="row">
+        <div class="row row-2 collapsible" id="parcelaRow">
+          <div class="field">
+            <label>Entrada (R$)</label>
+            <input name="entrada" placeholder="299,00" />
+          </div>
+          <div class="field">
+            <label>2ª Parcela — 30 dias (R$)</label>
+            <input name="parcela2" placeholder="calculado" readonly />
+          </div>
+        </div>
+        <div class="row row-2">
+          <div class="field">
+            <label>Data do contrato</label>
+            <input name="data" type="date" />
+          </div>
           <div class="field">
             <label>Foro de Eleição</label>
             <input name="foro" placeholder="Ceilândia, DF" />
@@ -559,7 +605,7 @@
       <p>3.3 – A CONTRATANTE fornecerá à CONTRATADA os documentos e meios necessários à comprovação processual do seu pretendido direito, sob pena de exclusão da responsabilidade causídico, inclusive dentro dos prazos legais.</p>
 
       <div class="clause-title">Cláusula Quarta — Do Pagamento</div>
-      <p>4.1 – Pelo serviço objeto do presente contrato, a CONTRATANTE deverá pagar à CONTRATADA a quantia de pagamento via PIX à vista no valor de <span data-bind="valorFmt" data-empty="R$ [valor]" class="placeholder empty">R$ [valor]</span>, de forma irrevogável e irretratável.</p>
+      <p id="clausula41"><!-- gerado dinamicamente --></p>
       <p>4.2 – O pagamento é devido pela CONTRATANTE em favor da CONTRATADA por ação protocolada, ou seja, cada ação gera uma obrigação de pagamento nos valores constantes na cláusula anterior.</p>
       <p>4.3 – O não cumprimento do pagamento fará a ação ser revogada, sem direito à devolução de qualquer quantia paga, incorrendo em multa contratual de 2% (dois por cento) sobre os valores devidos, atualização monetária pelo INPC e juros monetário de 1% ao mês.</p>
 
@@ -605,6 +651,8 @@
   const form = document.getElementById('form');
   const doc = document.getElementById('doc');
   const toast = document.getElementById('toast');
+  const parcelaRow = document.getElementById('parcelaRow');
+  const clausula41 = document.getElementById('clausula41');
 
   // ---- Helpers ----
   const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
@@ -620,10 +668,33 @@
     return `${d} de ${capWords(MESES[m-1])} de ${y}.`;
   }
 
+  function formatDateShort(iso) {
+    if (!iso) return '';
+    const [y, m, d] = iso.split('-').map(Number);
+    if (!y || !m || !d) return '';
+    return `${d} de ${MESES[m-1]} de ${y}`;
+  }
+
+  // Add N days to an ISO date and return new ISO date
+  function addDays(iso, days) {
+    if (!iso) return '';
+    const [y, m, d] = iso.split('-').map(Number);
+    if (!y || !m || !d) return '';
+    const dt = new Date(y, m - 1, d);
+    dt.setDate(dt.getDate() + days);
+    const yy = dt.getFullYear();
+    const mm = String(dt.getMonth() + 1).padStart(2, '0');
+    const dd = String(dt.getDate()).padStart(2, '0');
+    return `${yy}-${mm}-${dd}`;
+  }
+
+  function parseMoney(v) {
+    if (!v) return NaN;
+    return parseFloat(String(v).replace(/\./g, '').replace(',', '.'));
+  }
+
   function formatMoney(v) {
-    if (!v) return '';
-    // Accept "599,00", "599.00", "599"
-    const num = parseFloat(String(v).replace(/\./g, '').replace(',', '.'));
+    const num = typeof v === 'number' ? v : parseMoney(v);
     if (isNaN(num)) return '';
     return 'R$ ' + num.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   }
@@ -636,9 +707,61 @@
     return parts.join(', ');
   }
 
-  // ---- Render ----
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+
+  // Builds the placeholder span markup for clause 4.1
+  function ph(value, fallback) {
+    if (value) return `<span class="placeholder">${escapeHtml(value)}</span>`;
+    return `<span class="placeholder empty">${escapeHtml(fallback)}</span>`;
+  }
+
+  // ---- Render the dynamic Clause 4.1 ----
+  function renderClausula41(modalidade, data) {
+    const valorNum = parseMoney(data.valor);
+    const entradaNum = parseMoney(data.entrada);
+    const valorFmt = formatMoney(valorNum);
+
+    if (modalidade === 'parcelado') {
+      const parcela2Num = (!isNaN(valorNum) && !isNaN(entradaNum)) ? (valorNum - entradaNum) : NaN;
+      const entradaFmt = formatMoney(entradaNum);
+      const parcela2Fmt = formatMoney(parcela2Num);
+
+      // 2nd installment date: contract date + 30 days
+      const data2Iso = addDays(data.data, 30);
+      const data2Fmt = formatDateShort(data2Iso);
+
+      clausula41.innerHTML =
+        `4.1 – Pelo serviço objeto do presente contrato, a CONTRATANTE deverá pagar à CONTRATADA a quantia total de ${ph(valorFmt, 'R$ [valor total]')}, via PIX, parcelada em 2 (duas) vezes da seguinte forma: ` +
+        `entrada no valor de ${ph(entradaFmt, 'R$ [entrada]')} a ser paga no ato da assinatura do presente contrato; e ` +
+        `parcela final no valor de ${ph(parcela2Fmt, 'R$ [parcela]')} a ser paga em até 30 (trinta) dias contados da assinatura ${data2Fmt ? `(vencimento em ${ph(data2Fmt, '')})` : ''}, de forma irrevogável e irretratável.`;
+
+      // also update the parcela2 input
+      if (form.parcela2) {
+        form.parcela2.value = !isNaN(parcela2Num) ? parcela2Num.toFixed(2).replace('.', ',') : '';
+      }
+    } else {
+      clausula41.innerHTML =
+        `4.1 – Pelo serviço objeto do presente contrato, a CONTRATANTE deverá pagar à CONTRATADA a quantia de ${ph(valorFmt, 'R$ [valor]')} via PIX à vista, de forma irrevogável e irretratável.`;
+      if (form.parcela2) form.parcela2.value = '';
+    }
+  }
+
+  // ---- Render full document ----
   function render() {
     const data = Object.fromEntries(new FormData(form));
+    const modalidade = data.modalidade || 'vista';
+
+    // toggle parcela row
+    if (modalidade === 'parcelado') {
+      parcelaRow.classList.add('open');
+    } else {
+      parcelaRow.classList.remove('open');
+    }
+
     const computed = {
       ...data,
       enderecoCompleto: buildEndereco(data),
@@ -661,6 +784,8 @@
         el.textContent = '';
       }
     });
+
+    renderClausula41(modalidade, data);
   }
 
   // ---- Auto-format inputs as user types ----
@@ -688,7 +813,15 @@
 
     const valor = form.valor;
     valor.addEventListener('blur', e => {
-      const num = parseFloat(String(e.target.value).replace(/\./g, '').replace(',', '.'));
+      const num = parseMoney(e.target.value);
+      if (!isNaN(num)) {
+        e.target.value = num.toFixed(2).replace('.', ',');
+      }
+    });
+
+    const entrada = form.entrada;
+    entrada.addEventListener('blur', e => {
+      const num = parseMoney(e.target.value);
       if (!isNaN(num)) {
         e.target.value = num.toFixed(2).replace('.', ',');
       }
@@ -714,7 +847,7 @@
     // Build standalone HTML with just the document
     const docHtml = doc.outerHTML;
     const standalone = `<!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="UTF-8"><title>Contrato — ${data.nome || ''}</title>
+<html lang="pt-BR"><head><meta charset="UTF-8"><title>Contrato — ${escapeHtml(data.nome || '')}</title>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Fraunces:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 body{margin:0;background:#ebe3d0;font-family:'EB Garamond',Georgia,serif;padding:40px 20px;}
@@ -747,9 +880,10 @@ body{margin:0;background:#ebe3d0;font-family:'EB Garamond',Georgia,serif;padding
 
   document.getElementById('resetBtn').addEventListener('click', () => {
     if (!confirm('Deseja limpar todos os campos do contratante?')) return;
-    ['nome','cpf','rg','email','logradouro','numero','bairro','cidade','uf','cep'].forEach(n => {
+    ['nome','cpf','rg','email','logradouro','numero','bairro','cidade','uf','cep','entrada'].forEach(n => {
       if (form[n]) form[n].value = '';
     });
+    form.modalidade.value = 'vista';
     form.valor.value = '599,00';
     form.data.value = new Date().toISOString().slice(0,10);
     form.foro.value = 'Ceilândia, DF';
@@ -758,11 +892,13 @@ body{margin:0;background:#ebe3d0;font-family:'EB Garamond',Georgia,serif;padding
   });
 
   // ---- Init ----
+  form.modalidade.value = 'vista';
   form.valor.value = '599,00';
   form.data.value = new Date().toISOString().slice(0,10);
   form.foro.value = 'Ceilândia, DF';
   attachMasks();
   form.addEventListener('input', render);
+  form.addEventListener('change', render);
   render();
 })();
 </script>
